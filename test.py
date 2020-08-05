@@ -4,12 +4,11 @@ import face_recognition
 
 if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
-    # initia;ize variables
+    # initiaize variables
     face_locations = []
     while True:
         ret, frame = cap.read()
-        rgb_frame = frame[:, :, ::-1]
-        face_locations = face_recognition.face_locations(rgb_frame)
+        face_locations = face_recognition.face_locations(frame, model='cnn')
         for (t, r, b, l) in face_locations:
             cv2.rectangle(frame, (l, t), (r, b), (0, 255, 0), 3)
 
