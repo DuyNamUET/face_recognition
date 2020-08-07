@@ -1,4 +1,3 @@
-import pyrealsense2 as rs
 import cv2
 import numpy as np
 import face_recognition
@@ -6,6 +5,7 @@ import glob
 import pickle
 import os
 
+# Get all image in dataset 
 def load_resource(dir, ext=["jpg", "png"]):
     if not os.path.exists(dir):
         print("No source directory.")
@@ -27,8 +27,9 @@ def load_resource(dir, ext=["jpg", "png"]):
     
     pickle.dump(boxes, open("coords.txt", 'wb'))
         
-
-def recognition(coords):
+# Run with Relsense Camera
+def recognition_realsense(coords):
+    import pyrealsense2 as rs
     # config depth and color
     pipeline = rs.pipeline()
     config = rs.config()
@@ -74,9 +75,42 @@ def recognition(coords):
     finally:
         pipeline.stop()
 
+# Run with Web cam
+def recognition_webcam(coords):
+    cap = cv2.VideoCapture(0)
+
+    name = []; encoding = []
+    for key, value in coords.items():
+        name.append(key)
+        encoding.append(value)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+
+    while True:
+        _, color_img = cap.read()
+        face_locations = face_recognition.face_locations(color_img)
+        # print(face_locations)
+        if len(face_locations) == 1:
+            [(t, r, b, l)] = face_locations
+
+            unknown_encoding = face_recognition.face_encodings(color_img)[0]
+            results = face_recognition.compare_faces(encoding, unknown_encoding)
+            index = [i for i,x in enumerate(results) if x == True]
+
+            cv2.rectangle(color_img, (l, t), (r, b), (0,255,0), 3)
+            cv2.putText(color_img, name[index[0]].replace("_", " "), (l,t),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv2.LINE_AA) 
+        elif len(face_locations) > 1:
+            print("Please try again")
+        
+        # show on screen
+        cv2.imshow('', color_img)
+        if cv2.waitKey(1) & 0xFF ==ord('q'):
+            break
+
 if __name__ == "__main__":
     # Load all dataset to file
-    load_resource(dir="dataset")
+    # load_resource(dir="dataset")
     
     coords = pickle.load(open("coords.txt", 'rb'))
-    recognition(coords)
+    recognition_webcam(coords)
+    # recognition_realsense(coords)

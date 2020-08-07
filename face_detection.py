@@ -1,9 +1,9 @@
-import pyrealsense2 as rs
 import cv2
 import numpy as np
 import face_recognition
 
-if __name__ == "__main__":
+def detect_using_realsense():
+    import pyrealsense2 as rs
     # config depth and color
     pipeline = rs.pipeline()
     config = rs.config()
@@ -40,3 +40,28 @@ if __name__ == "__main__":
 
     finally:
         pipeline.stop()
+
+def detect_using_webcam():
+    cap = cv2.VideoCapture(0)
+
+    while True:
+        _, image = cap.read()
+
+        face_locations = face_recognition.face_locations(image)
+        for (t, r, b, l) in face_locations:
+            size = (b-t)*(r-l)
+            print(size)
+            if size < 2000:
+                continue
+            cv2.rectangle(image, (l, t), (r, b), (0, 255, 0), 3)
+
+        cv2.imshow("", image)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    
+    cap.release()
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    detect_using_webcam()
+    # detect_using_realsense()
