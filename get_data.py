@@ -25,9 +25,8 @@ if __name__ == "__main__":
         name = input("Enter your name: ")
         img_dir = ("dataset/"+name).replace(' ', '_')
         if os.path.exists("{}".format(img_dir)):
-            # print("The name is used. Please enter your name again.")
-            # continue
-            break
+            print("The name is used. Please enter your name again.")
+            continue
         else:
             os.makedirs(img_dir)
             break
